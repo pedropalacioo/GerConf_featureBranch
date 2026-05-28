@@ -16,6 +16,23 @@ GerConf_featureBranch/
 └── README.md            # Este arquivo
 ```
 
+## Feature Branch WorkFlow
+
+Nesse projeto, foram utilizadas *feature branches* para implementação e organização do projeto. Essas ramificações são criadas para desenvolver novas funcionalidades *(uma branch para cada feature)* de forma isolada, ou seja, sem "quebrar" o que já funciona. É uma das bases do **Git Flow**.
+
+- **Por que utilizar feature branches?**
+ - Promover a colaboração entre equipes;
+ - Permitir revisões mais eficientes;
+ - Tornam o processo de desenvolvimento mais previsível.
+
+- **Padrões utilizados na criação de branches:**
+ - feat/(...) -> nova funcionalidade
+ - fix/(...) -> correção de bug
+ - docs/(...) -> documentação
+ - test/(...) -> testes
+ - refactor/(...) -> melhoria interna sem mudar comportamento
+  
+ 
 ## Funcionalidades
 
 ### CRUD de Livros
