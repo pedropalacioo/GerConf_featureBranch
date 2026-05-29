@@ -12,8 +12,11 @@ GerConf_featureBranch/
 │   └── database.py       # Gerenciamento de banco de dados
 ├── data/
 │   └── livros.json       # Arquivo de armazenamento (gerado automaticamente)
-├── main.py              # Interface principal da aplicação
-└── README.md            # Este arquivo
+├── main.py               # Interface CLI da aplicação
+├── api.py                # API REST com FastAPI
+├── test_api.py           # Testes automatizados com pytest
+├── requirements.txt      # Dependências do projeto
+└── README.md             # Este arquivo
 ```
 
 ## Funcionalidades
@@ -36,13 +39,24 @@ GerConf_featureBranch/
 
 ## Como Usar
 
-### 1. Executar a Aplicação
+### Opção 1: Interface CLI (Menu Interativo)
 
 ```bash
 python main.py
 ```
 
-### 2. Menu Principal
+### Opção 2: API REST com FastAPI (Recomendado)
+
+```bash
+uvicorn api:app --reload
+```
+
+A API estará disponível em:
+- 🌐 **API Base**: `http://localhost:8000`
+- 📚 **Documentação Interativa**: `http://localhost:8000/docs`
+- 🔧 **ReDoc**: `http://localhost:8000/redoc`
+
+### Menu Principal (CLI)
 
 A aplicação exibe um menu interativo com as seguintes opções:
 
@@ -82,6 +96,86 @@ Gênero: Ficção Científica
 Autor (ou parte do nome): Orwell
 ```
 
+## API REST - Endpoints
+
+### Health Check
+```http
+GET /
+```
+
+### Livros
+```http
+GET    /livros                  # Listar todos os livros
+POST   /livros                  # Criar novo livro
+GET    /livros/{id}             # Obter livro por ID
+PUT    /livros/{id}             # Atualizar livro
+DELETE /livros/{id}             # Deletar livro
+```
+
+### Filtros e Buscas
+```http
+GET /livros/disponiveis         # Listar apenas livros disponíveis
+GET /livros/busca/titulo?q=    # Buscar por título
+GET /livros/busca/autor?q=     # Buscar por autor
+```
+
+### Empréstimos
+```http
+POST /livros/{id}/emprestar     # Emprestar livro
+POST /livros/{id}/devolver      # Devolver livro
+```
+
+### Exemplos de Requisição (curl)
+
+**Criar um livro:**
+```bash
+curl -X POST http://localhost:8000/livros \
+  -H "Content-Type: application/json" \
+  -d '{
+    "titulo": "1984",
+    "autor": "George Orwell",
+    "ano": 1949,
+    "genero": "Ficção Científica"
+  }'
+```
+
+**Listar todos os livros:**
+```bash
+curl http://localhost:8000/livros
+```
+
+**Emprestar um livro:**
+```bash
+curl -X POST http://localhost:8000/livros/1/emprestar
+```
+
+## Testes
+
+### Executar Todos os Testes
+
+```bash
+pytest test_api.py -v
+```
+
+### Executar com Mais Detalhes
+
+```bash
+pytest test_api.py -v --tb=short
+```
+
+### Executar Teste Específico
+
+```bash
+pytest test_api.py::test_api_criar_livro -v
+```
+
+### Cobertura de Testes
+
+O arquivo `test_api.py` contém **26 testes** cobrindo:
+- ✅ Modelos (Livro)
+- ✅ Database (CRUD, Buscas, Disponibilidade)
+- ✅ API REST (Todos os endpoints)
+
 ## Estrutura de Dados
 
 ### Modelo Livro
@@ -104,25 +198,45 @@ Os livros são armazenados em formato JSON no arquivo `data/livros.json`. O arqu
 ## Requisitos
 
 - Python 3.6+
+- pip (gerenciador de pacotes Python)
 
-## Dependências
+## Instalação
 
-Nenhuma dependência externa! O projeto usa apenas bibliotecas padrão do Python.
+### 1. Clonar o Repositório
+
+```bash
+git clone <repository-url>
+cd GerConf_featureBranch
+```
+
+### 2. Instalar Dependências
+
+```bash
+pip install -r requirements.txt
+```
+
+### Dependências
+
+- **FastAPI** - Framework moderno para criar APIs REST
+- **uvicorn** - Servidor ASGI para executar a API
+- **pydantic** - Validação de dados com type hints
+- **pytest** - Framework para testes automatizados
 
 ## 👥 Equipe e Distribuição de Tarefas
 
 ### ✅ Concluído
 - **Rayan** - CRUD de Livros (Create, Read, Update, Delete)
+- **Pedro** - ✅ API REST (FastAPI), ✅ Testes (pytest)
 
 ### 📋 Em Desenvolvimento
 
-| Pessoa | Responsabilidade |
-|--------|-----------------|
-| **Samuel** | 👤 Sistema de Usuários, Autenticação, Histórico de Empréstimos |
-| **Sebastião** | 🎨 Frontend - Estrutura, Layout, Templates Base |
-| **Ramon** | 🎨 Frontend - CRUD de Livros (Interface), Empréstimos, Filtros |
-| **Sabrina** | 📊 Sistema de Reservas, Multas, Categorias, Relatórios |
-| **Pedro** | 🔧 API REST, Testes, Deployment |
+| Pessoa | Responsabilidade | Status |
+|--------|-----------------|--------|
+| **Samuel** | 👤 Sistema de Usuários, Autenticação, Histórico de Empréstimos | 📋 |
+| **Sebastião** | 🎨 Frontend - Estrutura, Layout, Templates Base | 📋 |
+| **Ramon** | 🎨 Frontend - CRUD de Livros (Interface), Empréstimos, Filtros | 📋 |
+| **Sabrina** | 📊 Sistema de Reservas, Multas, Categorias, Relatórios | 📋 |
+| **Pedro** | 🔧 API REST, Testes, ✅ Deployment | ⏳ |
 
 Para mais detalhes sobre as tarefas específicas, consulte [DISTRIBUICAO_TAREFAS.md](DISTRIBUICAO_TAREFAS.md).
 
@@ -132,3 +246,25 @@ Para mais detalhes sobre as tarefas específicas, consulte [DISTRIBUICAO_TAREFAS
 - A busca por título e autor é case-insensitive
 - O arquivo JSON é formatado para facilitar leitura e edição manual
 - Todas as operações preservam a integridade dos dados
+- A API REST possui CORS habilitado para integração com frontend
+- Os testes usam banco de dados temporário (não afetam dados reais)
+
+## Troubleshooting
+
+### Porta 8000 já em uso
+```bash
+uvicorn api:app --reload --port 8001
+```
+
+### Erro ao instalar dependências
+```bash
+python3 -m pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+## Desenvolvimento Futuro
+
+- 📦 **Deployment**: Docker, CI/CD
+- 🗄️ **Banco de Dados**: Migrar de JSON para SQLite/PostgreSQL
+- 🔐 **Autenticação**: JWT tokens
+- 📱 **Frontend**: Integração com React/Vue
