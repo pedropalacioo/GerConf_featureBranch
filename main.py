@@ -2,12 +2,62 @@
 Interface principal do sistema de biblioteca.
 """
 
-from src.database import Database
+from src.database import Database, UsuarioDatabase
 
-def exibir_menu():
+def exibir_menu_login():
+    """Exibe o menu de login."""
+    print("\n" + "="*50)
+    print("         SISTEMA DE BIBLIOTECA - LOGIN")
+    print("="*50)
+    print("1. Fazer Login")
+    print("2. Cadastrar Novo Usuário")
+    print("0. Sair")
+    print("="*50)
+
+def login(db_usuarios):
+    """Realiza o login do usuário."""
+    print("\n--- Login ---")
+    username = input("Username: ").strip()
+    senha = input("Senha: ").strip()
+    
+    usuario = db_usuarios.autenticar(username, senha)
+    if usuario:
+        print(f"\n✓ Bem-vindo, {usuario.nome}!")
+        return usuario
+    else:
+        print("\n✗ Usuário ou senha incorretos!")
+        return None
+
+def cadastrar_usuario(db_usuarios):
+    """Cadastra um novo usuário."""
+    print("\n--- Cadastro de Usuário ---")
+    nome = input("Nome completo: ").strip()
+    username = input("Username: ").strip()
+    senha = input("Senha: ").strip()
+    
+    if nome and username and senha:
+        usuario = db_usuarios.criar_usuario(nome, username, senha)
+        if usuario:
+            print(f"\n✓ Usuário '{username}' cadastrado com sucesso!")
+        else:
+            print("\n✗ Erro: Username já existe!")
+    else:
+        print("\n✗ Erro: Todos os campos são obrigatórios!")
+
+def ver_historico(usuario):
+    """Exibe o histórico de empréstimos do usuário logado."""
+    print(f"\n--- Histórico de {usuario.nome} ---")
+    if not usuario.historico:
+        print("Nenhum registro encontrado.")
+    else:
+        for item in usuario.historico:
+            status = "✓ Devolvido" if item['status'] == 'devolvido' else "⚠ Pendente"
+            print(f"- {item['titulo']} | Status: {status}")
+
+def exibir_menu(usuario):
     """Exibe o menu principal."""
     print("\n" + "="*50)
-    print("         SISTEMA DE BIBLIOTECA")
+    print(f"         SISTEMA DE BIBLIOTECA (Logado: {usuario.username})")
     print("="*50)
     print("1. Adicionar novo livro")
     print("2. Listar todos os livros")
@@ -19,7 +69,8 @@ def exibir_menu():
     print("8. Deletar livro")
     print("9. Emprestar livro")
     print("10. Devolver livro")
-    print("0. Sair")
+    print("11. Ver Meu Histórico")
+    print("0. Logout")
     print("="*50)
 
 def adicionar_livro(db):
@@ -131,8 +182,8 @@ def deletar_livro(db):
     except ValueError:
         print("\n✗ Erro: ID deve ser um número!")
 
-def emprestar_livro(db):
-    """Marca um livro como emprestado."""
+def emprestar_livro(db, db_usuarios, usuario_logado):
+    """Marca um livro como emprestado e registra no histórico."""
     try:
         livro_id = int(input("\nID do livro a emprestar: "))
         livro = db.buscar_por_id(livro_id)
@@ -145,12 +196,16 @@ def emprestar_livro(db):
             return
         
         db.emprestar(livro_id)
+        db_usuarios.registrar_emprestimo(usuario_logado.id, livro)
+        # Atualiza o objeto usuario_logado na memória para refletir o histórico atualizado
+        usuario_logado.historico.append({'livro_id': livro.id, 'titulo': livro.titulo, 'status': 'pendente'})
+        
         print(f"\n✓ Livro '{livro.titulo}' emprestado com sucesso!")
     except ValueError:
         print("\n✗ Erro: ID deve ser um número!")
 
-def devolver_livro(db):
-    """Marca um livro como devolvido."""
+def devolver_livro(db, db_usuarios, usuario_logado):
+    """Marca um livro como devolvido e atualiza o histórico."""
     try:
         livro_id = int(input("\nID do livro a devolver: "))
         livro = db.buscar_por_id(livro_id)
@@ -162,47 +217,83 @@ def devolver_livro(db):
             print(f"\n✗ O livro '{livro.titulo}' já está disponível!")
             return
         
+        # Verifica se o livro está no histórico do usuário logado como pendente
+        tem_no_historico = False
+        for item in usuario_logado.historico:
+            if item['livro_id'] == livro_id and item['status'] == 'pendente':
+                tem_no_historico = True
+                break
+        
+        if not tem_no_historico:
+            print("\n✗ Você não possui este livro em seu histórico de pendências!")
+            return
+
         db.devolver(livro_id)
+        db_usuarios.registrar_devolucao(usuario_logado.id, livro_id)
+        # Atualiza na memória
+        for item in usuario_logado.historico:
+            if item['livro_id'] == livro_id and item['status'] == 'pendente':
+                item['status'] = 'devolvido'
+                break
+
         print(f"\n✓ Livro '{livro.titulo}' devolvido com sucesso!")
     except ValueError:
         print("\n✗ Erro: ID deve ser um número!")
 
 def main():
-    """Função principal."""
+    """Função principal com fluxo de login."""
     db = Database()
+    db_usuarios = UsuarioDatabase()
+    usuario_logado = None
     
     while True:
-        exibir_menu()
-        opcao = input("Escolha uma opção: ").strip()
-        
-        try:
+        if not usuario_logado:
+            exibir_menu_login()
+            opcao = input("Escolha uma opção: ").strip()
+            
             if opcao == "1":
-                adicionar_livro(db)
+                usuario_logado = login(db_usuarios)
             elif opcao == "2":
-                listar_livros(db)
-            elif opcao == "3":
-                listar_disponiveis(db)
-            elif opcao == "4":
-                buscar_por_id(db)
-            elif opcao == "5":
-                buscar_por_titulo(db)
-            elif opcao == "6":
-                buscar_por_autor(db)
-            elif opcao == "7":
-                atualizar_livro(db)
-            elif opcao == "8":
-                deletar_livro(db)
-            elif opcao == "9":
-                emprestar_livro(db)
-            elif opcao == "10":
-                devolver_livro(db)
+                cadastrar_usuario(db_usuarios)
             elif opcao == "0":
                 print("\nAté logo!")
                 break
             else:
-                print("\n✗ Opção inválida! Tente novamente.")
-        except Exception as e:
-            print(f"\n✗ Erro inesperado: {e}")
+                print("\n✗ Opção inválida!")
+        else:
+            exibir_menu(usuario_logado)
+            opcao = input("Escolha uma opção: ").strip()
+            
+            try:
+                if opcao == "1":
+                    adicionar_livro(db)
+                elif opcao == "2":
+                    listar_livros(db)
+                elif opcao == "3":
+                    listar_disponiveis(db)
+                elif opcao == "4":
+                    buscar_por_id(db)
+                elif opcao == "5":
+                    buscar_por_titulo(db)
+                elif opcao == "6":
+                    buscar_por_autor(db)
+                elif opcao == "7":
+                    atualizar_livro(db)
+                elif opcao == "8":
+                    deletar_livro(db)
+                elif opcao == "9":
+                    emprestar_livro(db, db_usuarios, usuario_logado)
+                elif opcao == "10":
+                    devolver_livro(db, db_usuarios, usuario_logado)
+                elif opcao == "11":
+                    ver_historico(usuario_logado)
+                elif opcao == "0":
+                    print(f"\nLogout realizado: {usuario_logado.username}")
+                    usuario_logado = None
+                else:
+                    print("\n✗ Opção inválida! Tente novamente.")
+            except Exception as e:
+                print(f"\n✗ Erro inesperado: {e}")
 
 if __name__ == "__main__":
     main()
