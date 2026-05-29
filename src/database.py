@@ -4,7 +4,7 @@ Gerenciamento de banco de dados para livros.
 
 import json
 import os
-from models import Livro
+from .models import Livro, Usuario
 
 class Database:
     """Gerencia o armazenamento e recuperação de livros."""
@@ -121,3 +121,97 @@ class Database:
     def devolver(self, livro_id):
         """Marca um livro como devolvido (disponível)."""
         return self.atualizar(livro_id, disponivel=True)
+
+class UsuarioDatabase:
+    """Gerencia o armazenamento e recuperação de usuários."""
+    
+    def __init__(self, arquivo_dados='data/usuarios.json'):
+        self.arquivo_dados = arquivo_dados
+        self._garantir_arquivo()
+    
+    def _garantir_arquivo(self):
+        """Garante que o arquivo de dados existe."""
+        os.makedirs(os.path.dirname(self.arquivo_dados), exist_ok=True)
+        if not os.path.exists(self.arquivo_dados):
+            with open(self.arquivo_dados, 'w', encoding='utf-8') as f:
+                json.dump([], f, ensure_ascii=False, indent=2)
+    
+    def _carregar(self):
+        """Carrega todos os usuários do arquivo."""
+        try:
+            with open(self.arquivo_dados, 'r', encoding='utf-8') as f:
+                dados = json.load(f)
+                return [Usuario.from_dict(item) for item in dados]
+        except (json.JSONDecodeError, FileNotFoundError):
+            return []
+    
+    def _salvar(self, usuarios):
+        """Salva todos os usuários no arquivo."""
+        with open(self.arquivo_dados, 'w', encoding='utf-8') as f:
+            dados = [usuario.to_dict() for usuario in usuarios]
+            json.dump(dados, f, ensure_ascii=False, indent=2)
+    
+    def _proxima_id(self):
+        """Gera o próximo ID disponível."""
+        usuarios = self._carregar()
+        if not usuarios:
+            return 1
+        return max(usuario.id for usuario in usuarios) + 1
+    
+    def criar_usuario(self, nome, username, senha):
+        """Cria um novo usuário."""
+        if self.buscar_por_username(username):
+            return None # Usuário já existe
+            
+        usuarios = self._carregar()
+        novo_usuario = Usuario(
+            id=self._proxima_id(),
+            nome=nome,
+            username=username,
+            senha=senha
+        )
+        usuarios.append(novo_usuario)
+        self._salvar(usuarios)
+        return novo_usuario
+    
+    def buscar_por_username(self, username):
+        """Busca um usuário pelo username."""
+        usuarios = self._carregar()
+        for usuario in usuarios:
+            if usuario.username == username:
+                return usuario
+        return None
+
+    def autenticar(self, username, senha):
+        """Autentica um usuário."""
+        usuario = self.buscar_por_username(username)
+        if usuario and usuario.senha == senha:
+            return usuario
+        return None
+
+    def registrar_emprestimo(self, usuario_id, livro):
+        """Registra um empréstimo no histórico do usuário."""
+        usuarios = self._carregar()
+        for usuario in usuarios:
+            if usuario.id == usuario_id:
+                # Adiciona livro ao histórico com status 'pendente'
+                usuario.historico.append({
+                    'livro_id': livro.id,
+                    'titulo': livro.titulo,
+                    'status': 'pendente'
+                })
+                self._salvar(usuarios)
+                return True
+        return False
+
+    def registrar_devolucao(self, usuario_id, livro_id):
+        """Registra uma devolução no histórico do usuário."""
+        usuarios = self._carregar()
+        for usuario in usuarios:
+            if usuario.id == usuario_id:
+                for item in usuario.historico:
+                    if item['livro_id'] == livro_id and item['status'] == 'pendente':
+                        item['status'] = 'devolvido'
+                        self._salvar(usuarios)
+                        return True
+        return False

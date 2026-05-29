@@ -87,7 +87,7 @@ Nenhuma dependência externa! O projeto usa apenas bibliotecas padrão do Python
 
 | Pessoa | Responsabilidade |
 |--------|-----------------|
-| **Samuel** | 👤 Sistema de Usuários, Autenticação, Histórico de Empréstimos |
+| Samuel | 👤 [Sistema de Usuários](./DOCUMENTACAO_USUARIOS.md), Autenticação, Histórico de Empréstimos |
 | **Sebastião** | 🎨 Frontend - Estrutura, Layout, Templates Base |
 | **Ramon** | 🎨 Frontend - CRUD de Livros (Interface), Empréstimos, Filtros |
 | **Sabrina** | 📊 Sistema de Reservas, Multas, Categorias, Relatórios |
