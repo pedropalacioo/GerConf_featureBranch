@@ -2,6 +2,7 @@ import './style.css';
 import { renderNavbar } from './components/navbar.js';
 import { renderDashboard } from './components/dashboard.js';
 import { renderUsuarios, initUsuarios } from './components/usuarios.js';
+import { renderReservas, initReservas } from './components/reservas.js';
 
 const app = document.querySelector('#app');
 
@@ -26,6 +27,9 @@ function navigate(page) {
   } else if (page === 'usuarios') {
     content.innerHTML = renderUsuarios();
     initUsuarios();
+  } else if (page === 'reservas') {
+    content.innerHTML = renderReservas();
+    initReservas();
   } else {
     content.innerHTML = `
       <div class="page-container">

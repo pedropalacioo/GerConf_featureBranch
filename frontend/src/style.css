@@ -299,6 +299,11 @@ main {
   color: #991b1b;
 }
 
+.badge-warning {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
 .actions-cell {
   display: flex;
   gap: 8px;
