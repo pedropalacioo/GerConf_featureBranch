@@ -6,6 +6,7 @@ Um sistema simples de biblioteca em Python com funcionalidades de CRUD para gere
 
 ```
 GerConf_featureBranch/
+├── frontend/             # Frontend da aplicação com Vite
 ├── src/
 │   ├── __init__.py       # Inicialização do módulo
 │   ├── models.py         # Modelo da classe Livro
@@ -36,50 +37,18 @@ GerConf_featureBranch/
 
 ## Como Usar
 
-### 1. Executar a Aplicação
+### 1. Executar Backend
 
 ```bash
 python main.py
 ```
 
-### 2. Menu Principal
+### 2. Inicializar Servidor Frontend
 
-A aplicação exibe um menu interativo com as seguintes opções:
-
-```
-1. Adicionar novo livro
-2. Listar todos os livros
-3. Listar livros disponíveis
-4. Buscar livro por ID
-5. Buscar livro por título
-6. Buscar livro por autor
-7. Atualizar livro
-8. Deletar livro
-9. Emprestar livro
-10. Devolver livro
-0. Sair
-```
-
-### 3. Exemplos de Uso
-
-**Adicionar um livro:**
-```
-1 (Enter)
-Título: 1984
-Autor: George Orwell
-Ano de publicação: 1949
-Gênero: Ficção Científica
-```
-
-**Listar todos os livros:**
-```
-2 (Enter)
-```
-
-**Buscar por autor:**
-```
-6 (Enter)
-Autor (ou parte do nome): Orwell
+```bash
+cd frontend
+npm i
+npm run dev
 ```
 
 ## Estrutura de Dados
