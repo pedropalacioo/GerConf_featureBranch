@@ -111,13 +111,11 @@ Nenhuma dependência externa! O projeto usa apenas bibliotecas padrão do Python
 
 ## 👥 Equipe e Distribuição de Tarefas
 
-### ✅ Concluído
-- **Rayan** - CRUD de Livros (Create, Read, Update, Delete)
-
 ### 📋 Em Desenvolvimento
 
 | Pessoa | Responsabilidade |
 |--------|-----------------|
+| Rayan | CRUD de Livros 
 | Samuel | 👤 [Sistema de Usuários](./DOCUMENTACAO_USUARIOS.md), Autenticação, Histórico de Empréstimos |
 | **Sebastião** | 🎨 Frontend - Estrutura, Layout, Templates Base |
 | **Ramon** | 🎨 Frontend - CRUD de Livros (Interface), Empréstimos, Filtros |
