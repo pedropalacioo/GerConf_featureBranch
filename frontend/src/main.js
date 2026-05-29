@@ -3,6 +3,8 @@ import { renderNavbar } from './components/navbar.js';
 import { renderDashboard } from './components/dashboard.js';
 import { renderUsuarios, initUsuarios } from './components/usuarios.js';
 import { renderReservas, initReservas } from './components/reservas.js';
+import { renderGerirLivros, initGerirLivros } from './components/gerirLivros.js';
+import { renderEmprestimos, initEmprestimos } from './components/emprestimos.js';
 
 const app = document.querySelector('#app');
 
@@ -30,11 +32,17 @@ function navigate(page) {
   } else if (page === 'reservas') {
     content.innerHTML = renderReservas();
     initReservas();
+  } else if (page === 'livros') {
+    content.innerHTML = renderGerirLivros();
+    initGerirLivros();
+  } else if (page === 'emprestimos') {
+    content.innerHTML = renderEmprestimos();
+    initEmprestimos();
   } else {
     content.innerHTML = `
       <div class="page-container">
         <div class="page-header">
-          <h1 class="page-title">Em Construção</h1>
+          <h1 class="page-title bibble-text">Em Construção</h1>
           <p class="page-subtitle">Esta página será implementada em breve.</p>
         </div>
       </div>
